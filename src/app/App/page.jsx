@@ -6,12 +6,12 @@ import { useAuth } from './AuthProvider/page'
 
 const App = () => {
   // const [authUser,setAuthUser] = useState("");
-  const {authUser} = useAuth();
+  const {authUser,setAuthUser} = useAuth();
 
   return (
       <div>
         <div>
-         {!authUser && (
+         {!setAuthUser && (
 
           <div>
            Authentication
@@ -19,16 +19,16 @@ const App = () => {
          )} 
         </div>
         <div>
-          {/* {authUser && ( */}
+          {setAuthUser && (
           <div>
               <div>
                 ログイン中です
               </div>
               <div>
-                 <SignOutButton authUser={authUser} />
+                 <SignOutButton  />
               </div>
           </div>
-          {/* )} */}
+          )}
         </div>
       </div>
         

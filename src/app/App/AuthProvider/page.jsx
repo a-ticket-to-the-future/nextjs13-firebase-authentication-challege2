@@ -18,22 +18,22 @@ export const useAuth = () => {
 
   
 
-    const signOut = async () => {
-      try{
-        if(authUser){
+    // const signOut = async () => {
+    //   try{
+    //     if(authUser){
   
-          await signOutFromFirebase(auth);
-          setAuthUser(undefined);
-        }
-        // setAuthUser(undefined)
-        // console.log(setAuthUser);
-      } catch(error) {
-        console.log(error);
-      }
+    //       await signOutFromFirebase(auth);
+    //       setAuthUser(undefined);
+    //     }
+    //     // setAuthUser(undefined)
+    //     // console.log(setAuthUser);
+    //   } catch(error) {
+    //     console.log(error);
+    //   }
   
   
   
-    }
+    // }
     
 
   return (
@@ -45,14 +45,14 @@ export const useAuth = () => {
       useContextのテスト//これはdivタグの中身の出力です。"useContext"の中身はどこへ行っちゃったのかな？
     </div>
     <div>
-      <PopupSignInButton setAuthUser={setAuthUser} />
+      <PopupSignInButton authUser={authUser} />
     </div>
     <div>
-    <div>
+    {/* <div>
       <button className='border-2 border-red-600 mx-5 my-20 px-4 py-1 bg-red-700 text-slate-50 rounded-md font-bold hover:scale-110 active:scale-95' onClick={signOut}>
                     サインアウト
       </button>
-    </div>
+    </div> */}
     </div>
 
     <div>
