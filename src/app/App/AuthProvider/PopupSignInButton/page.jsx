@@ -3,10 +3,12 @@
 import React, { useState } from 'react'
 import {googleProvider, gitHubProvider, emailProvider, auth} from "../../../../firebase"
 import { signInWithPopup } from 'firebase/auth';
+import { useAuth } from '../page';
 
 const PopupSignInButton = () => {
 
     const [authUser , setAuthUser] = useState("");
+    // const {authUser, setAuthUser} = useAuth();
     
 
     const signIn = async (selectedProvider,email,password) => {
@@ -39,6 +41,16 @@ const PopupSignInButton = () => {
 
     }
 
+    // const signOut = async () => {
+    //     try{
+    //         await signOut(auth);
+    //         setAuthUser(undefined); 
+    //         console.log("サインアウト成功");
+    //     } catch(error) {
+    //         console.log("サインアウトできていません",error)
+    //     }
+    //     }
+
   return (
     <div>
       <div>
@@ -50,7 +62,11 @@ const PopupSignInButton = () => {
       </div>
         <div>
           <div>
-           
+          {/* <div>
+      <button className='border-2 border-red-600 mx-5 my-20 px-4 py-1 bg-red-700 text-slate-50 rounded-md font-bold hover:scale-110 active:scale-95' onClick={signOut}>
+                    サインアウト
+      </button>
+    </div> */}
           </div>
         </div>
       </div>

@@ -6,23 +6,19 @@ import AuthProvider, { useAuth } from '../page'
 import {signOut as signOutFromFirebase} from "firebase/auth"
 
 const SignOutButton = () => {
-  const {authUser} = useAuth(auth);
+  const {authUser,setAuthUser} = useAuth();
+  // console.log(authUser)
+  
 
   const signOut = async () => {
     try{
-      if(authUser){
-
-        await signOutFromFirebase(auth);
-      }
-      // setAuthUser(undefined)
-      // console.log(setAuthUser);
+        await auth.signOut(auth);
+        setAuthUser(undefined); 
+        console.log("サインアウト成功");
     } catch(error) {
-      console.log(error);
+        console.log("サインアウトできていません",error)
     }
-
-
-
-  }
+    }
 
   return (
     <div>
