@@ -1,32 +1,41 @@
 "use client"
 
-import React, { useState } from 'react'
-import SignOutButton from './AuthProvider/SignOutButton/page'
-import { useAuth } from './AuthProvider/page'
+import React, { useRef, useState } from 'react'
+import { useAuth } from '../AuthProvider/page'
+import { auth } from '../../firebase'
 
 const App = () => {
   // const [authUser,setAuthUser] = useState("");
-  const {authUser,setAuthUser} = useAuth();
+  const {authUser} = useAuth();
+
+
+  // const res = useRef();
+  // console.log(res);
+
 
   return (
       <div>
         <div>
-         {!setAuthUser && (
-
+         {!authUser && (
+          <div>
           <div>
            Authentication
+          </div>
+          <div>
+          {/* <PopupSignInButton  /> */}
+          </div>
           </div>
          )} 
         </div>
         <div>
-          {setAuthUser && (
+          {authUser && (
           <div>
               <div>
                 ログイン中です
               </div>
-              <div>
+              {/* <div>
                  <SignOutButton  />
-              </div>
+              </div> */}
           </div>
           )}
         </div>
