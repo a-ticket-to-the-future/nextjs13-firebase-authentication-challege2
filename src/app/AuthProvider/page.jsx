@@ -51,6 +51,8 @@ export const useAuth = () => {
         setAuthUser(signUpUser);
         console.log(authUser)
 
+        closeModal();
+
       }catch(error){
         const errorCode = error.code;
         const errorMessage = error.Message;
