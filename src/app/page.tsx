@@ -4,8 +4,14 @@ import Image from 'next/image'
 import AuthProvider, { useAuth } from './AuthProvider/page'
 import App from './App/page'
 
+
+
+
+
+
 export default function Home() {
-// const [authUser,setAuthUser] = useAuth();
+  // const [authUser,setAuthUser] = useAuth();
+  
 
   return (
     <AuthProvider>
@@ -21,3 +27,6 @@ export default function Home() {
     </AuthProvider>
   )
 }
+
+
+
