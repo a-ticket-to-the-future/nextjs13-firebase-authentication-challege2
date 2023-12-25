@@ -4,6 +4,9 @@ import React, { useRef, useState } from 'react'
 import { useAuth } from '../AuthProvider/page'
 import { auth } from '../../firebase'
 
+
+
+
 const App = () => {
   // const [authUser,setAuthUser] = useState("");
   const {authUser} = useAuth();
@@ -43,5 +46,7 @@ const App = () => {
         
   )
 }
+
+
 
 export default App
