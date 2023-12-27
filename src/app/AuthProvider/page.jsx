@@ -59,6 +59,7 @@ export const useAuth = () => {
           console.log(checkEmail.data().email);
           if(checkEmail.data().email === email){
             alert("このメールアドレスはすでに使用されています")
+            return;
           } else if(checkEmail.data().email !== email) {
             const userCredential = await createUserWithEmailAndPassword(auth,email,password);
         const signUpUser = userCredential.user;
