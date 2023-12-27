@@ -2,7 +2,7 @@
 
 import { auth, emailProvider, gitHubProvider, googleProvider,credentialProvider, db } from '@/firebase';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, } from 'firebase/auth';
-import { addDoc, collection } from 'firebase/firestore';
+import { addDoc, collection, getDoc, getDocs } from 'firebase/firestore';
 import React, { createContext, useContext, useState } from 'react'
 import Modal from 'react-modal';
 
@@ -51,7 +51,20 @@ export const useAuth = () => {
     const handleSignUpSubmit = async (e) => {
       e.preventDefault();
       try{
-
+        
+        const emailRef = await getDocs(collection(db,"users"))
+        console.log(emailRef);
+        console.log(emailRef.docs);
+        for (const checkEmail of emailRef.docs){
+          console.log(checkEmail.data().email);
+          if(checkEmail.data().email === email){
+            alert("このメールアドレスはすでに使用されています")
+          } else if(checkEmail.data().email !== email) {
+            const userCredential = await createUserWithEmailAndPassword(auth,email,password);
+        const signUpUser = userCredential.user;
+        console.log(signUpUser);
+        setAuthUser(signUpUser);
+          
         // const isExistingUser = await auth.checkEmail(email);
 
         // if(isExistingUser){
@@ -62,15 +75,27 @@ export const useAuth = () => {
         // chek
 
         //メールアドレスが登録されていない場合
-        const userCredential = await createUserWithEmailAndPassword(auth,email,password);
-        const signUpUser = userCredential.user;
-        console.log(signUpUser);
-        setAuthUser(signUpUser);
+        //もともとはこの４行が動いていた。覚えておいてね。
+        // const userCredential = await createUserWithEmailAndPassword(auth,email,password);
+        // const signUpUser = userCredential.user;
+        // console.log(signUpUser);
+        // setAuthUser(signUpUser);
         
         
 
        //同じメールアドレスが存在しないかを確認し、ユーザー情報の保存を処理をしとこう 
        const saveSignInUserData = async () => {
+
+        // const emailRef = await getDocs(collection(db,"users"))
+        // console.log(emailRef);
+        // console.log(emailRef.docs);
+        // for (const email of emailRef.docs){
+        //   console.log(email.data().email);
+        //   if(email.data().email === email){
+        //     throw new Error("このメールアドレスはすでに使用されています")
+        //   }
+        // }
+        
 
         const data = {
          displayName : displayName,
@@ -80,7 +105,7 @@ export const useAuth = () => {
         }
 
         const docRef = await addDoc(collection(db,"users"),data);
-        console.log(docRef);
+        
 
         console.log("Document written with ID :",docRef.id);
 
@@ -101,7 +126,8 @@ export const useAuth = () => {
         await saveSignInUserData();
        }
 
-       
+      }
+    }
       }catch(error){
         if(error.code === "auth/email-already-in-use"){
           alert("このメールアドレスはすでに使用されています。")
