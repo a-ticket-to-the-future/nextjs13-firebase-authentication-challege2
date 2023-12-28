@@ -5,6 +5,10 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithP
 import { addDoc, collection, getDoc, getDocs } from 'firebase/firestore';
 import React, { createContext, useContext, useState } from 'react'
 import Modal from 'react-modal';
+import bcryptjs from "bcryptjs";
+import _ from "lodash";
+
+
 
 
 
@@ -55,16 +59,25 @@ export const useAuth = () => {
         const emailRef = await getDocs(collection(db,"users"))
         console.log(emailRef);
         console.log(emailRef.docs);
-        for (const checkEmail of emailRef.docs){
-          console.log(checkEmail.data().email);
-          if(checkEmail.data().email === email){
-            alert("このメールアドレスはすでに使用されています")
+          // console.log(checkEmail.data().email);
+          // console.log((checkEmail.data().email === email) > 0);
+          const emailArrays = emailRef.docs.map(checkEmail => checkEmail.data().email);
+          console.log(emailArrays);
+          console.log(emailArrays.indexOf(email) !== -1);
+          // emailRef.docs().map(checkEmail => checkEmail.data().email);
+          // console.log(emailArray.includes(email));
+          // if((checkEmail.data().email === email) >0){
+            if(emailArrays.indexOf(email) !== -1){
+            alert("このメールアドレスはすでにデータベースで使用されています")
             return;
-          } else if(checkEmail.data().email !== email) {
-            const userCredential = await createUserWithEmailAndPassword(auth,email,password);
+          } 
+          else if(emailArrays.indexOf(email) === -1) {
+            const userCredential = await createUserWithEmailAndPassword(auth,email,password,displayName);
         const signUpUser = userCredential.user;
         console.log(signUpUser);
         setAuthUser(signUpUser);
+        
+        
           
         // const isExistingUser = await auth.checkEmail(email);
 
@@ -85,59 +98,72 @@ export const useAuth = () => {
         
 
        //同じメールアドレスが存在しないかを確認し、ユーザー情報の保存を処理をしとこう 
-       const saveSignInUserData = async () => {
+      //  if(checkEmail.data().email !== email){
 
-        // const emailRef = await getDocs(collection(db,"users"))
-        // console.log(emailRef);
-        // console.log(emailRef.docs);
-        // for (const email of emailRef.docs){
-        //   console.log(email.data().email);
-        //   if(email.data().email === email){
-        //     throw new Error("このメールアドレスはすでに使用されています")
-        //   }
-        // }
-        
+         const saveSignInUserData = async () => {
+  
+          // const emailRef = await getDocs(collection(db,"users"))
+          // console.log(emailRef);
+          // console.log(emailRef.docs);
+          // for (const email of emailRef.docs){
+          //   console.log(email.data().email);
+          //   if(email.data().email === email){
+          //     throw new Error("このメールアドレスはすでに使用されています")
+          //   }
+          // }
+          
+          const hashedPassword = await bcryptjs.hash(password,12)
+  
+          const data = {
+           displayName : displayName,
+            email: email,
+            password:hashedPassword,
+            uid:signUpUser.uid,
+          }
+  
+          const docRef = await addDoc(collection(db,"users"),data);
+          
+  
+          console.log("Document written with ID :",docRef.id);
+  
+          // if(docRef.docs.length > 0){
+          //   return;
+          // } else {
+  
+          //   await addDoc(collection(db,"users"),{
+          //     displayName: displayName,
+          //     email:email,
+          //   });
+          //   console.log("Document written with ID",docRef.id)
+          // }
+  //ここの記述は初期からあった。動いていた2023年12月28日コメントアウトした。けどすぐやめた
+  
+          }
+          
+          if(signUpUser.uid  ){
+            if(emailArrays.indexOf(email) !== -1){
+              return;
+            } else {
 
-        const data = {
-         displayName : displayName,
-          email: email,
-          password:password,
-          uid:signUpUser.uid,
+              await saveSignInUserData();
+              closeModal();
+              
+            }
+        };
         }
-
-        const docRef = await addDoc(collection(db,"users"),data);
-        
-
-        console.log("Document written with ID :",docRef.id);
-
-        // if(docRef.docs.length > 0){
-        //   return;
-        // } else {
-
-        //   await addDoc(collection(db,"users"),{
-        //     displayName: displayName,
-        //     email:email,
-        //   });
-        //   console.log("Document written with ID",docRef.id)
-        // }
-
-       };
-
-       if(signUpUser.uid){
-        await saveSignInUserData();
-       }
-
-      }
+    
+  }catch(error){
+    if(error.code === "auth/email-already-in-use"){
+      alert("このメールアドレスはすでに認証機能に使用されています。")
+      return;
     }
-      }catch(error){
-        if(error.code === "auth/email-already-in-use"){
-          alert("このメールアドレスはすでに使用されています。")
-        }
-        const errorCode = error.code;
-        const errorMessage = error.Message;
-        console.log(errorCode,errorMessage);
-      }
-      closeModal();
+    const errorCode = error.code;
+    const errorMessage = error.Message;
+    console.log(errorCode,errorMessage);
+    
+  }
+  closeModal();
+
     } ;
 
     //モーダルを閉じる
