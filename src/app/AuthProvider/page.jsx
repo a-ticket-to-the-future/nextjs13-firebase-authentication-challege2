@@ -27,7 +27,8 @@ export const useAuth = () => {
 
     const [user, setUser] = useState("");
     const [authUser,setAuthUser] = useState("");
-    const [modalIsOpen,setModalIsOpen] = useState(false);
+    const [signUpModalIsOpen,setSignUpModalIsOpen] = useState(false);
+    const [signInModalIsOpen,setSignInModalIsOpen] = useState(false);
     const [email,setEmail] = useState("");
     const [password,setPassword] = useState("");
     const [displayName,setDisplayName] = useState("");
@@ -168,7 +169,14 @@ export const useAuth = () => {
 
     //モーダルを閉じる
     const closeModal = () => {
-      setModalIsOpen(false);
+      setSignUpModalIsOpen(false);
+      setDisplayName(null);
+      setEmail(null);
+      setPassword(null);
+    }
+    //モーダルを閉じる2
+    const closeModal2 = () => {
+      setSignInModalIsOpen(false);
       setDisplayName(null);
       setEmail(null);
       setPassword(null);
@@ -183,7 +191,7 @@ export const useAuth = () => {
        
         await handleSignUpSubmit();
 
-        setModalIsOpen(false);
+        setSignUpModalIsOpen(false);
       }
        catch(error){
         console.log("サインアップできていません",error);
@@ -191,6 +199,137 @@ export const useAuth = () => {
       
 
     }
+//モーダル開いている時の処理2
+
+    const afterOpenModal2 = async () => {
+      
+      try{
+       
+        await handleSignInSubmit();
+
+        setSignInModalIsOpen(false);
+      }
+       catch(error){
+        console.log("サインアップできていません",error);
+       }
+      
+
+    }
+
+
+    const handleSignInSubmit = async (e) => {
+      e.preventDefault();
+      try{
+        
+        const emailRef = await getDocs(collection(db,"users"))
+        console.log(emailRef);
+        console.log(emailRef.docs);
+          // console.log(checkEmail.data().email);
+          // console.log((checkEmail.data().email === email) > 0);
+          const emailArrays = emailRef.docs.map(checkEmail => checkEmail.data().email);
+          console.log(emailArrays);
+          console.log(emailArrays.indexOf(email) !== -1);
+          // emailRef.docs().map(checkEmail => checkEmail.data().email);
+          // console.log(emailArray.includes(email));
+          // if((checkEmail.data().email === email) >0){
+            if(emailArrays.indexOf(email) !== -1){
+            alert("このメールアドレスはすでにデータベースで使用されています")
+            return;
+          } 
+          else if(emailArrays.indexOf(email) === -1) {
+            const userCredential = await createUserWithEmailAndPassword(auth,email,password,displayName);
+        const signUpUser = userCredential.user;
+        console.log(signUpUser);
+        setAuthUser(signUpUser);
+        
+        
+          
+        // const isExistingUser = await auth.checkEmail(email);
+
+        // if(isExistingUser){
+        //   //すでに登録されている場合
+        //   alert("このメールアドレスはすでに登録されています。");
+        //   return;
+        // }
+        // chek
+
+        //メールアドレスが登録されていない場合
+        //もともとはこの４行が動いていた。覚えておいてね。
+        // const userCredential = await createUserWithEmailAndPassword(auth,email,password);
+        // const signUpUser = userCredential.user;
+        // console.log(signUpUser);
+        // setAuthUser(signUpUser);
+        
+        
+
+       //同じメールアドレスが存在しないかを確認し、ユーザー情報の保存を処理をしとこう 
+      //  if(checkEmail.data().email !== email){
+
+         const saveSignInUserData = async () => {
+  
+          // const emailRef = await getDocs(collection(db,"users"))
+          // console.log(emailRef);
+          // console.log(emailRef.docs);
+          // for (const email of emailRef.docs){
+          //   console.log(email.data().email);
+          //   if(email.data().email === email){
+          //     throw new Error("このメールアドレスはすでに使用されています")
+          //   }
+          // }
+          
+          const hashedPassword = await bcryptjs.hash(password,12)
+  
+          const data = {
+           displayName : displayName,
+            email: email,
+            password:hashedPassword,
+            uid:signUpUser.uid,
+          }
+  
+          const docRef = await addDoc(collection(db,"users"),data);
+          
+  
+          console.log("Document written with ID :",docRef.id);
+  
+          // if(docRef.docs.length > 0){
+          //   return;
+          // } else {
+  
+          //   await addDoc(collection(db,"users"),{
+          //     displayName: displayName,
+          //     email:email,
+          //   });
+          //   console.log("Document written with ID",docRef.id)
+          // }
+  //ここの記述は初期からあった。動いていた2023年12月28日コメントアウトした。けどすぐやめた
+  
+          }
+          
+          if(signUpUser.uid  ){
+            if(emailArrays.indexOf(email) !== -1){
+              return;
+            } else {
+
+              await saveSignInUserData();
+              closeModal2();
+              
+            }
+        };
+        }
+    
+  }catch(error){
+    if(error.code === "auth/email-already-in-use"){
+      alert("このメールアドレスはすでに認証機能に使用されています。")
+      return;
+    }
+    const errorCode = error.code;
+    const errorMessage = error.Message;
+    console.log(errorCode,errorMessage);
+    
+  }
+  closeModal2();
+
+    } ;
 
 
 
@@ -208,10 +347,10 @@ export const useAuth = () => {
       } else if (selectedProvider === 'github'){
           selectedAuthProvider = gitHubProvider;
             console.log(selectedAuthProvider);
-          } else if (selectedProvider === 'email'){
-            if (selectedProvider === 'email'){
+          } else if (selectedProvider === 'emailSignUp'){
+            if (selectedProvider === 'emailSignUp'){
 
-                   setModalIsOpen(true);
+                   setSignUpModalIsOpen(true);
              await afterOpenModal();
 
                     
@@ -220,7 +359,9 @@ export const useAuth = () => {
               // selectedAuthProvider = emailProvider
 
               // console.log(selectedAuthProvider);
-            } else if(error) {
+            }
+            
+            else if(error) {
               const authUserCredential = await signInWithEmailAndPassword(auth,email,password,displayName)
               // .then((userCredential) => {
               //   setAuthUser(userCredential);
@@ -231,7 +372,28 @@ export const useAuth = () => {
                 console.log(authUser);
 
               }
-            } else if(error) {
+            } else if(selectedProvider === 'emailSignIn'){
+
+              if (selectedProvider === 'emailSignIn'){
+
+                setSignInModalIsOpen(true);
+                await afterOpenModal2();
+
+              }
+              else if(error) {
+                const authUserCredential = await signInWithEmailAndPassword(auth,email,password,displayName)
+                // .then((userCredential) => {
+                //   setAuthUser(userCredential);
+                  //とりあえず書いたけど、image-uploader-sample5-clone13-2を参考にして記述してみよう
+                  //一旦、上２行をコメントアウトして再開2023年12月23日
+                  setAuthUser(authUserCredential.user);
+                  console.log(setAuthUser);
+                  console.log(authUser);
+  
+                }
+
+            }
+              else if(error) {
               console.log(error);
             
           
@@ -297,9 +459,10 @@ export const useAuth = () => {
                 <button className=' border-2 border-blue-600 mx-5 my-20 px-4 py-1 bg-blue-700 text-slate-50 rounded-md font-bold hover:scale-110 active:scale-95' onClick={() => signIn('google')}>Sign in with Google</button>
                 {/* <button className=' border-2 border-blue-600 mx-5 my-20 px-4 py-1 bg-blue-700 text-slate-50 rounded-md font-bold hover:scale-110 active:scale-95' onClick={() => signIn('facebook')}>Sign in wit FaceBook</button> */}
                 <button className=' border-2 border-blue-600 mx-5 my-20 px-4 py-1 bg-green-700 text-slate-50 rounded-md font-bold hover:scale-110 active:scale-95' onClick={() => signIn('github')}>Sign in with GitHub</button>
-                <button className=' border-2 border-blue-600 mx-5 my-20 px-4 py-1 bg-purple-500 text-slate-50 rounded-md font-bold hover:scale-110 active:scale-95' onClick={() => signIn('email')}>Sign in with Email</button>
+                {/* サインアップ */}
+                <button className=' border-2 border-green-600 mx-5 my-20 px-4 py-1 bg-green-400 text-slate-50 rounded-md font-bold hover:scale-110 active:scale-95' onClick={() => signIn('emailSignUp')}>Sign up with Email</button>
                 <Modal
-                  isOpen={modalIsOpen}
+                  isOpen={signUpModalIsOpen}
                   onAfterOpen={afterOpenModal}
                   onRequestClose={closeModal}
                   contentLabel="EmailAuthProvider Modal"
@@ -347,10 +510,70 @@ export const useAuth = () => {
                   </div>
                   <div className='flex ml-[100px]' >
 
-                  <button onClick={handleSignUpSubmit} className='my-10 mr-[350px] bg-blue-500 border-blue-800 text-slate-50 rounded-md w-[150px] h-[30px] hover:scale-105 active:scale-95'>
+                  <button onClick={handleSignUpSubmit} className='my-10 mr-[350px] bg-green-400 border-green-500 text-slate-50 rounded-md w-[150px] h-[30px] hover:scale-105 active:scale-95'>
                     サインアップ
                   </button>
                   <button onClick={closeModal} className='my-10 bg-red-500 border-red-800 text-slate-50 rounded-md w-[150px] hover:scale-105 active:scale-95'>
+                    キャンセル
+                  </button>
+                  </div>
+                </div>
+                </Modal>
+                {/* サインイン */}
+                <button className=' border-2 border-blue-500 mx-5 my-20 px-4 py-1 bg-blue-400 text-slate-50 rounded-md font-bold hover:scale-110 active:scale-95' onClick={() => signIn('emailSignIn')}>Sign in with Email</button>
+                <Modal
+                  isOpen={signInModalIsOpen}
+                  onAfterOpen={afterOpenModal2}
+                  onRequestClose={closeModal2}
+                  contentLabel="EmailAuthProvider Modal"
+                  className=' w-[1000px] h-[500px] mx-[240px] my-[50px]  border-2 border-blue-600 bg-slate-50 '
+                > 
+                <div className='flex flex-col ml-20'>
+                  <div className='mt-[50px] ml-[100px]'>モーダルの中身書いてみてここでメールアドレスとパスワードをインプットさせよう</div>
+                  <div className=' h-[300px]'>
+                    <form action="" onSubmit={handleSignInSubmit} >
+                      <div className='flex flex-col mt-[100px] ml-[150px]'>
+                        <div>
+                          <label htmlFor="displayName">ユーザーネーム<span className=' text-slate-50'>...</span></label>
+                          <input type="text"
+                                 id='displayName'
+                                //  value={displayName}
+                                 onChange={handleChangeDisplayName}
+                                 required
+                                 className=' border-2 border-black w-[350px] h-[30px] my-5' 
+                                 />
+                                 
+                        </div>
+                        <div>
+                          <label htmlFor="email">メールアドレス<span className=' text-slate-50'>...</span></label>
+                          <input type="email"
+                                 id='email'
+                                //  value={email}
+                                 onChange={handleChangeEmail}
+                                 required
+                                 className=' border-2 border-black w-[350px] h-[30px] my-5' 
+                                 />
+                                 
+                        </div>
+                        <div>
+                          <label htmlFor="password">パスワード<span className=' text-slate-50'>..........</span></label>
+                          <input type="password"
+                                 id='password'
+                                //  value={password}
+                                 onChange={handleChangePassword}
+                                 required
+                                 className='border-2 border-black w-[350px] h-[30px]' 
+                                 />
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                  <div className='flex ml-[100px]' >
+
+                  <button onClick={handleSignInSubmit} className='my-10 mr-[350px] bg-blue-400 border-blue-600 text-slate-50 rounded-md w-[150px] h-[30px] hover:scale-105 active:scale-95'>
+                    サインイン
+                  </button>
+                  <button onClick={closeModal2} className='my-10 bg-red-500 border-red-800 text-slate-50 rounded-md w-[150px] hover:scale-105 active:scale-95'>
                     キャンセル
                   </button>
                   </div>
