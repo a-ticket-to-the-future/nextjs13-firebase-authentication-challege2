@@ -460,7 +460,7 @@ export const useAuth = () => {
                 {/* <button className=' border-2 border-blue-600 mx-5 my-20 px-4 py-1 bg-blue-700 text-slate-50 rounded-md font-bold hover:scale-110 active:scale-95' onClick={() => signIn('facebook')}>Sign in wit FaceBook</button> */}
                 <button className=' border-2 border-blue-600 mx-5 my-20 px-4 py-1 bg-green-700 text-slate-50 rounded-md font-bold hover:scale-110 active:scale-95' onClick={() => signIn('github')}>Sign in with GitHub</button>
                 {/* サインアップ */}
-                <button className=' border-2 border-green-600 mx-5 my-20 px-4 py-1 bg-green-400 text-slate-50 rounded-md font-bold hover:scale-110 active:scale-95' onClick={() => signIn('emailSignUp')}>Sign up with Email</button>
+                <button className=' border-2 border-lime-500 mx-5 my-20 px-4 py-1 bg-lime-400 text-slate-50 rounded-md font-bold hover:scale-110 active:scale-95' onClick={() => signIn('emailSignUp')}>Sign up with Email</button>
                 <Modal
                   isOpen={signUpModalIsOpen}
                   onAfterOpen={afterOpenModal}
@@ -520,7 +520,7 @@ export const useAuth = () => {
                 </div>
                 </Modal>
                 {/* サインイン */}
-                <button className=' border-2 border-blue-500 mx-5 my-20 px-4 py-1 bg-blue-400 text-slate-50 rounded-md font-bold hover:scale-110 active:scale-95' onClick={() => signIn('emailSignIn')}>Sign in with Email</button>
+                <button className=' border-2 border-cyan-500 mx-5 my-20 px-4 py-1 bg-cyan-400 text-slate-50 rounded-md font-bold hover:scale-110 active:scale-95' onClick={() => signIn('emailSignIn')}>Sign in with Email</button>
                 <Modal
                   isOpen={signInModalIsOpen}
                   onAfterOpen={afterOpenModal2}
