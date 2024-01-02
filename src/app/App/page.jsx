@@ -2,14 +2,21 @@
 
 import React, { useRef, useState } from 'react'
 import { useAuth } from '../AuthProvider/page'
-import { auth } from '../../firebase'
+import { auth, db } from '../../firebase'
+import { doc } from 'firebase/firestore'
 
 
 
 
 const App = () => {
   // const [authUser,setAuthUser] = useState("");
-  const {authUser} = useAuth();
+  const {authUser,signedInUserName} = useAuth();
+  
+  
+  // const signedInUserRef = doc(db,"users")
+  // const signedInUserData = signedInUserRef.where("uid","==",uid).get()
+
+  // console.log(signedInUserData);
 
 
   // const res = useRef();
@@ -33,6 +40,9 @@ const App = () => {
         <div>
           {authUser && (
           <div>
+              <div>
+                ようこそ{signedInUserName}さん
+              </div>
               <div>
                 ログイン中です
               </div>
