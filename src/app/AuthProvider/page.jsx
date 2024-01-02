@@ -2,11 +2,11 @@
 
 import { auth, emailProvider, gitHubProvider, googleProvider,credentialProvider, db } from '@/firebase';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, } from 'firebase/auth';
-import { addDoc, collection, getDoc, getDocs } from 'firebase/firestore';
+import { addDoc, collection, doc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore';
 import React, { createContext, useContext, useState } from 'react'
 import Modal from 'react-modal';
-import bcryptjs from "bcryptjs";
 import _ from "lodash";
+
 
 
 
@@ -32,10 +32,12 @@ export const useAuth = () => {
     const [email,setEmail] = useState("");
     const [password,setPassword] = useState("");
     const [displayName,setDisplayName] = useState("");
+    const [docId , setDocId] = useState("");
+    const [signedInUserName , setSignedInUserName] = useState("");
 
 
 
-    //モーダル内で行うサインアップ時の処理
+    
 
     const handleChangeDisplayName = (e) => {
       const inputDisplayName = e.target.value;
@@ -53,30 +55,38 @@ export const useAuth = () => {
       // console.log(password);
     }
 
+    //モーダル内で行うサインアップ時の処理
+
     const handleSignUpSubmit = async (e) => {
       e.preventDefault();
       try{
-        
+
         const emailRef = await getDocs(collection(db,"users"))
-        console.log(emailRef);
-        console.log(emailRef.docs);
-          // console.log(checkEmail.data().email);
-          // console.log((checkEmail.data().email === email) > 0);
-          const emailArrays = emailRef.docs.map(checkEmail => checkEmail.data().email);
-          console.log(emailArrays);
-          console.log(emailArrays.indexOf(email) !== -1);
-          // emailRef.docs().map(checkEmail => checkEmail.data().email);
-          // console.log(emailArray.includes(email));
-          // if((checkEmail.data().email === email) >0){
-            if(emailArrays.indexOf(email) !== -1){
-            alert("このメールアドレスはすでにデータベースで使用されています")
-            return;
-          } 
-          else if(emailArrays.indexOf(email) === -1) {
-            const userCredential = await createUserWithEmailAndPassword(auth,email,password,displayName);
+        console.log(emailRef)
+        console.log(emailRef.docs)
+
+        const emailArrays = emailRef.docs.map(checkEmail => checkEmail.data().email)
+        console.log(emailArrays);
+        console.log(emailArrays.indexOf(email) !== -1);
+        
+        // const emailRef = await getDocs(collection(db,"users"))
+        // // console.log(emailRef);
+        // // console.log(emailRef.docs);
+
+        if(emailArrays.indexOf(email) !== -1){
+
+          alert("このメールアドレスはすでに使用されています。他のメールアドレスを登録するか、googleアカウント等でサインアップしたことがおありでしたら、そちらでのサインインをお試しください")
+          return;
+
+        } else if (emailArrays.indexOf(email) === -1){
+
+          const userCredential = await createUserWithEmailAndPassword(auth,email,password,displayName);
         const signUpUser = userCredential.user;
         console.log(signUpUser);
+        console.log(signUpUser.uid);
         setAuthUser(signUpUser);
+
+
         
         
           
@@ -102,6 +112,9 @@ export const useAuth = () => {
       //  if(checkEmail.data().email !== email){
 
          const saveSignInUserData = async () => {
+
+          
+          
   
           // const emailRef = await getDocs(collection(db,"users"))
           // console.log(emailRef);
@@ -113,12 +126,14 @@ export const useAuth = () => {
           //   }
           // }
           
-          const hashedPassword = await bcryptjs.hash(password,12)
+          
+          // const hashedPassword = await bcryptjs.hash(password,12)
+          
   
           const data = {
            displayName : displayName,
             email: email,
-            password:hashedPassword,
+            
             uid:signUpUser.uid,
           }
   
@@ -126,38 +141,48 @@ export const useAuth = () => {
           
   
           console.log("Document written with ID :",docRef.id);
-  
-          // if(docRef.docs.length > 0){
-          //   return;
-          // } else {
-  
-          //   await addDoc(collection(db,"users"),{
-          //     displayName: displayName,
-          //     email:email,
-          //   });
-          //   console.log("Document written with ID",docRef.id)
-          // }
-  //ここの記述は初期からあった。動いていた2023年12月28日コメントアウトした。けどすぐやめた
+          
+          if(docRef.id){
+
+            setDocId(docRef.id);
+            const signedInUserDocIdRef = doc(db,"users",`${docRef.id}`) 
+            const docSnap = await getDoc(signedInUserDocIdRef);
+            console.log(docSnap.data());
+            console.log(docSnap.data().uid);
+          } 
   
           }
           
-          if(signUpUser.uid  ){
+          if(signUpUser.uid){
+            
             if(emailArrays.indexOf(email) !== -1){
               return;
             } else {
 
               await saveSignInUserData();
               closeModal();
-              
+
+
             }
+
+              
+            
         };
+
         }
+          
+         
+            
+        
+        
     
   }catch(error){
+
     if(error.code === "auth/email-already-in-use"){
-      alert("このメールアドレスはすでに認証機能に使用されています。")
+      alert("このメールアドレスはすでに認証機能に使用されています。");
       return;
     }
+   
     const errorCode = error.code;
     const errorMessage = error.Message;
     console.log(errorCode,errorMessage);
@@ -216,117 +241,85 @@ export const useAuth = () => {
 
     }
 
+//2024年1月
+    //モーダル内で行うサインイン時の処理
+
+    const handleChangeSignInDisplayName = (e) => {
+      const inputDisplayName = e.target.value;
+      setDisplayName(inputDisplayName);
+      // console.log(displayName);
+    }
+    const handleChangeSignInEmail = (e) => {
+      const inputMail = e.target.value;
+      setEmail(inputMail);
+      // console.log(email);
+    }
+    const handleChangeSignInPassword = (e) => {
+      const inputPassword = e.target.value;
+      setPassword(inputPassword);
+      // console.log(password);
+    }
+
 
     const handleSignInSubmit = async (e) => {
       e.preventDefault();
       try{
+
         
-        const emailRef = await getDocs(collection(db,"users"))
-        console.log(emailRef);
-        console.log(emailRef.docs);
-          // console.log(checkEmail.data().email);
-          // console.log((checkEmail.data().email === email) > 0);
-          const emailArrays = emailRef.docs.map(checkEmail => checkEmail.data().email);
-          console.log(emailArrays);
-          console.log(emailArrays.indexOf(email) !== -1);
-          // emailRef.docs().map(checkEmail => checkEmail.data().email);
-          // console.log(emailArray.includes(email));
-          // if((checkEmail.data().email === email) >0){
-            if(emailArrays.indexOf(email) !== -1){
-            alert("このメールアドレスはすでにデータベースで使用されています")
-            return;
-          } 
-          else if(emailArrays.indexOf(email) === -1) {
-            const userCredential = await createUserWithEmailAndPassword(auth,email,password,displayName);
-        const signUpUser = userCredential.user;
-        console.log(signUpUser);
-        setAuthUser(signUpUser);
+
+        const userCredential = await signInWithEmailAndPassword(auth,email,password,displayName);
+        console.log(userCredential);
+        const signInUser = userCredential.user;
+        console.log(signInUser);
+        console.log(signInUser.uid);
         
-        
+        setAuthUser(signInUser);
+
+        if(signInUser.uid){
+
+          const q = query(collection(db,"users"),where("uid","==",`${signInUser.uid}`))
+          console.log(q);
+
+          const docSnapQ = await getDocs(q);
+          docSnapQ.forEach((doc) => {
+            console.log(doc.id, "=>" ,doc.data())
+            setSignedInUserName(doc.data().displayName);
+            console.log(doc.data().displayName);
+          });
+
+          //snapshot.key.path.segments[6]
+
+
+          //ここから
+          // const signedInUserRef = doc(db,"users",`KoN9nnWKUCcxRnR97k69`)
+          // // const signedInUserRef = doc(db,"users",where("uid","==",`KA8CJbldwxUqsjsm3tVXTqgHHIF3`))
           
-        // const isExistingUser = await auth.checkEmail(email);
+          // const signedInUserData = await getDoc(signedInUserRef)
+          // // // const signedInUserData = await signedInUserRef.where("uid" , "==" , `${signInUser.uid}`);
+          // console.log(signedInUserData);
+          // // console.log(signedInUserData.docs[0].data());
+          // console.log(signedInUserData.data().displayName);
+          // setSignedInUserName(signedInUserData.data().displayName);
 
-        // if(isExistingUser){
-        //   //すでに登録されている場合
-        //   alert("このメールアドレスはすでに登録されています。");
-        //   return;
-        // }
-        // chek
-
-        //メールアドレスが登録されていない場合
-        //もともとはこの４行が動いていた。覚えておいてね。
-        // const userCredential = await createUserWithEmailAndPassword(auth,email,password);
-        // const signUpUser = userCredential.user;
-        // console.log(signUpUser);
-        // setAuthUser(signUpUser);
-        
-        
-
-       //同じメールアドレスが存在しないかを確認し、ユーザー情報の保存を処理をしとこう 
-      //  if(checkEmail.data().email !== email){
-
-         const saveSignInUserData = async () => {
-  
-          // const emailRef = await getDocs(collection(db,"users"))
-          // console.log(emailRef);
-          // console.log(emailRef.docs);
-          // for (const email of emailRef.docs){
-          //   console.log(email.data().email);
-          //   if(email.data().email === email){
-          //     throw new Error("このメールアドレスはすでに使用されています")
-          //   }
-          // }
-          
-          const hashedPassword = await bcryptjs.hash(password,12)
-  
-          const data = {
-           displayName : displayName,
-            email: email,
-            password:hashedPassword,
-            uid:signUpUser.uid,
-          }
-  
-          const docRef = await addDoc(collection(db,"users"),data);
-          
-  
-          console.log("Document written with ID :",docRef.id);
-  
-          // if(docRef.docs.length > 0){
-          //   return;
-          // } else {
-  
-          //   await addDoc(collection(db,"users"),{
-          //     displayName: displayName,
-          //     email:email,
-          //   });
-          //   console.log("Document written with ID",docRef.id)
-          // }
-  //ここの記述は初期からあった。動いていた2023年12月28日コメントアウトした。けどすぐやめた
-  
-          }
-          
-          if(signUpUser.uid  ){
-            if(emailArrays.indexOf(email) !== -1){
-              return;
-            } else {
-
-              await saveSignInUserData();
-              closeModal2();
-              
-            }
-        };
+          // // const singnedInUserUid = docSnap. 
+          //ここまで
+         
         }
+        
     
   }catch(error){
-    if(error.code === "auth/email-already-in-use"){
-      alert("このメールアドレスはすでに認証機能に使用されています。")
-      return;
-    }
+    
     const errorCode = error.code;
     const errorMessage = error.Message;
     console.log(errorCode,errorMessage);
     
-  }
+    alert("入力されたメールアドレスかパスワードが間違っています。または、まだ登録がお済みでないことが考えられます。登録がお済みでない場合はサインアップボタンの方から入力をお願いいたします。")
+      return;
+    }
+  
+
+    
+
   closeModal2();
 
     } ;
@@ -538,7 +531,7 @@ export const useAuth = () => {
                           <input type="text"
                                  id='displayName'
                                 //  value={displayName}
-                                 onChange={handleChangeDisplayName}
+                                 onChange={handleChangeSignInDisplayName}
                                  required
                                  className=' border-2 border-black w-[350px] h-[30px] my-5' 
                                  />
@@ -549,7 +542,7 @@ export const useAuth = () => {
                           <input type="email"
                                  id='email'
                                 //  value={email}
-                                 onChange={handleChangeEmail}
+                                 onChange={handleChangeSignInEmail}
                                  required
                                  className=' border-2 border-black w-[350px] h-[30px] my-5' 
                                  />
@@ -560,7 +553,7 @@ export const useAuth = () => {
                           <input type="password"
                                  id='password'
                                 //  value={password}
-                                 onChange={handleChangePassword}
+                                 onChange={handleChangeSignInPassword}
                                  required
                                  className='border-2 border-black w-[350px] h-[30px]' 
                                  />
@@ -593,13 +586,16 @@ export const useAuth = () => {
                     サインアウト
       </button>
     </div>
+    {/* <div className=' text-black'>
+      {docId}
+    </div> */}
 
     <div>
       
     
    
 
-    <AuthContext.Provider value={{user,setUser,authUser,setAuthUser,signIn,signOut}}>
+    <AuthContext.Provider value={{user,setUser,authUser,setAuthUser,docId,signedInUserName,signIn,signOut}}>
         {children}
         {/* {useState("")} */}
     </AuthContext.Provider>
