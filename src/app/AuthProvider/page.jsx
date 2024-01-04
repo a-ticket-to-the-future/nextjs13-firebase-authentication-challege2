@@ -285,6 +285,8 @@ export const useAuth = () => {
             console.log(doc.id, "=>" ,doc.data())
             setSignedInUserName(doc.data().displayName);
             console.log(doc.data().displayName);
+            setDocId(doc.id);
+            console.log(doc.id);
           });
 
           //snapshot.key.path.segments[6]

@@ -4,7 +4,7 @@ import React, { useRef, useState } from 'react'
 import { useAuth } from '../AuthProvider/page'
 import { auth, db } from '../../firebase'
 import { doc } from 'firebase/firestore'
-
+import SignedInUserDataEditButton from "./SignedInUserDataEditButton/page"
 
 
 
@@ -45,6 +45,10 @@ const App = () => {
               </div>
               <div>
                 ログイン中です
+              </div>
+              <div className='mt-[300px]'>
+
+              <SignedInUserDataEditButton />
               </div>
               {/* <div>
                  <SignOutButton  />
