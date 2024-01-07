@@ -2,7 +2,8 @@
 
 import { useAuth } from '@/app/AuthProvider/page';
 import { db } from '@/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { update } from 'firebase/database';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react'
 import Modal from 'react-modal';
 
@@ -74,13 +75,22 @@ const SignedInUserEditButton = () => {
         setUserEditModalOpen(false);
         setDisplayName(null);
         setEmail(null);
-        setPassword(null);
+        // setPassword(null);
       }
 
       const handleEditSubmit = async (e) => {
         e.preventDefault();
         try{
   
+
+          const updateUserDataRef = doc(db,"users",`${docId}`)
+
+          await updateDoc(updateUserDataRef,{
+            displayName:displayName
+            
+          })
+          alert("ユーザー情報を更新しました")
+
           //ここから
             // const editRef = doc(db,"users",`${docId}`)
             //       const editDocSnap = await getDoc(editRef);
@@ -215,7 +225,7 @@ const SignedInUserEditButton = () => {
                         <div>
                           <label htmlFor="password">ユーザーID<span className=' text-slate-50'>..........</span></label>
                           <input type="text"
-                                 id='password'
+                                 id='uid'
                                  value={uid}
                                  onChange={handleChangeUid}
                                  required
