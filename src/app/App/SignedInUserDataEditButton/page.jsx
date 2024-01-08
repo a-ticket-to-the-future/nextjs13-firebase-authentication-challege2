@@ -190,10 +190,10 @@ const SignedInUserEditButton = () => {
         className=' w-[1000px] h-[500px] mx-[240px] my-[50px]  border-2 border-blue-600 bg-slate-50 '
       >
       <div className='flex flex-col ml-20'>
-                  <div className='mt-[50px] ml-[100px]'>モーダルの中身書いてみてここでメールアドレスとパスワードをインプットさせよう</div>
-                  <div className=' h-[300px]'>
+                  <div className='mt-[20px] ml-[100px]'>モーダルの中身書いてみてここでメールアドレスとパスワードをインプットさせよう</div>
+                  <div className=' h-[200px]'>
                     <form action="" onSubmit={handleEditSubmit} >
-                      <div className='flex flex-col mt-[100px] ml-[150px]'>
+                      <div className='flex flex-col mt-[40px] ml-[150px]'>
                         <div>
                           <label htmlFor="displayName">ユーザーネーム<span className=' text-slate-50'>...</span></label>
                           <input type="text"
@@ -240,14 +240,25 @@ const SignedInUserEditButton = () => {
                     </div>
                     </form>
                   </div>
-                  <div className='flex ml-[100px]' >
+                  <div className=' flex flex-col mt-10'>
+                      <div className='flex ml-[100px]' >
 
-                  <button onClick={handleEditSubmit} className='my-10 mr-[350px] bg-fuchsia-400 border-fuchsia-500 text-slate-50 rounded-md w-[150px] h-[30px] hover:scale-105 active:scale-95'>
-                    編集を保存
-                  </button>
-                  <button onClick={closeUserEditModal} className='my-10 bg-red-500 border-red-800 text-slate-50 rounded-md w-[150px] hover:scale-105 active:scale-95'>
-                    キャンセル
-                  </button>
+                          <button onClick={handleEditSubmit} className='my-10 mr-[350px] bg-fuchsia-400 border-fuchsia-500 text-slate-50 rounded-md w-[150px] h-[30px] hover:scale-105 active:scale-95'>
+                            編集を保存
+                          </button>
+                          <button onClick={closeUserEditModal} className='my-10 bg-red-500 border-red-800 text-slate-50 rounded-md w-[150px] hover:scale-105 active:scale-95'>
+                            キャンセル
+                          </button>
+                      </div>
+                          <div className='flex ml-[100px]' >
+
+                          <button onClick={handleEditSubmit} className='my-10 mr-[350px] bg-amber-400 border-amber-500 text-slate-50 rounded-md w-[200px] h-[30px] hover:scale-105 active:scale-95'>
+                            メールアドレスを変更する
+                          </button>
+                          <button onClick={closeUserEditModal} className='my-10 bg-rose-400 border-rose-500 text-slate-50 rounded-md w-[200px] hover:scale-105 active:scale-95'>
+                            パスワードを変更する
+                          </button>
+                      </div>
                   </div>
                 </div>
       </Modal>
