@@ -1,7 +1,8 @@
 "use client"
 
 import { useAuth } from '@/app/AuthProvider/page';
-import { db } from '@/firebase';
+import { auth, db } from '@/firebase';
+import { reauthenticateWithCredential, sendEmailVerification, sendPasswordResetEmail, signInWithEmailAndPassword, updateEmail, verifyBeforeUpdateEmail, } from 'firebase/auth';
 import { update } from 'firebase/database';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react'
@@ -10,12 +11,14 @@ import Modal from 'react-modal';
 
 const SignedInUserEditButton = () => {
 
-    const {authUser , docId } = useAuth()
+    const {authUser , docId,password } = useAuth()
 
     const [userEditModalOpen ,setUserEditModalOpen] = useState(false);
     const [uid , setUid] = useState("")
     const [email , setEmail] = useState("")
     const [displayName , setDisplayName] = useState("")
+    const [newEmail , setNewEmail] = useState("");
+    const [reauthPassword,setReauthPassword] = useState("");
 
     // setSignedInUserName(doc.data().displayName)
 
@@ -30,8 +33,13 @@ const SignedInUserEditButton = () => {
         // console.log(email);
       }
       const handleChangeUid = (e) => {
-        const inputPassword = e.target.value;
-        setPassword(inputPassword);
+        // const inputPassword = e.target.value;
+        // setPassword(inputPassword);
+        // console.log(password);
+      }
+      const handleChangeUpdateEmail= (e) => {
+        const inputNewEmail = e.target.value;
+        setNewEmail(inputNewEmail);
         // console.log(password);
       }
 
@@ -54,10 +62,12 @@ const SignedInUserEditButton = () => {
                   console.log(editDocSnap.data());
                   const editUserData = editDocSnap.data();
                   console.log(editUserData.uid);
+                  console.log(editUserData.email);
         
                     setDisplayName(editUserData.displayName);
                     setEmail(editUserData.email);
                     setUid(editUserData.uid);
+                    setReauthPassword(password);
             // // await handleEditSubmit();
     
             // setUserEditModalOpen(false);
@@ -173,6 +183,137 @@ const SignedInUserEditButton = () => {
 
     // },[])
 
+    //一度書いたそれっぽい記述/ここから
+    // // const updateCredential = await promptForCredentials()
+    //   // console.log(auth.currentUser);
+    //   const newEmail = prompt("新しいメールアドレスを入力して下さい")
+
+    //   if(!newEmail){
+    //     alert("新しいメールアドレスを入力して下さい")
+    //     return;
+    //   } else {
+    //     // const user = auth.currentUser
+    //   signInWithEmailAndPassword(auth,email,"grandemilan2011").then((userCredential) => {
+    //     // console.log(userCredential);
+    //     // const user = userCredential.user
+    //     const user = auth.currentUser
+    //     console.log(user);
+    //     // const emailUpdateUser = updateUserCredential.user;
+    //     // console.log(emailUpdateUser);
+    //     if(user){
+    //       updateEmail(auth,user,newEmail).then(() => {
+    //         alert("メールアドレスが更新されました")
+    //       }).catch((error) => {
+    //         alert("メールアドレスが更新できませんでした")
+    //       })
+    //     } else{
+    //       const errorCode = error.code;
+    //     const errorMessage = error.Message;
+    //       alert("ログインの確認ができていません")
+    //       console.log(errorCode,errorMessage)
+    //     }
+
+    //   }).catch((error) => {
+    //     //認証に失敗した場合
+    //     const errorCode = error.code;
+    //     const errorMessage = error.Message;
+
+    //     alert("エラー",errorCode,errorMessage);
+    //   })
+    //   }
+    //ここまで
+
+    const handleUpdateUserEmail = async (e) => {
+
+      e.preventDefault();
+
+      const user = auth.currentUser
+      
+      await sendEmailVerification(auth.currentUser).then(()=> {
+        alert("ログインユーザーに確認メールを送信しました")
+        console.log(auth.currentUser)
+
+        
+      
+      }).catch((error) => {
+        alert("確認メールの送信に失敗しました")
+      })
+      
+       
+
+      if ( user && user.emailVerified) {
+
+       
+      
+          const newEmail = prompt("新しいメールアドレスを入力してください")
+    
+          // const user = auth.currentUser
+          const updatedEmail = auth.currentUser.email
+    
+           await signInWithEmailAndPassword(auth,updatedEmail,"grandemilan2011").then((credentialUser) => {
+            const user = credentialUser.user
+    
+            if(user && newEmail){
+              //auth.currentUser
+              verifyBeforeUpdateEmail(auth.currentUser,`${newEmail}`).then(()=>{
+                alert("新しいメールアドレスに確認メールが送信されました")
+                // sendEmailVerification(user);
+
+                // console.log(auth.currentUser);
+                //"KoN9nnWKUCcxRnR97k69"
+                const updateUserDataRef = doc(db,"users",`${docId}`)
+                console.log(updateUserDataRef);
+                 updateDoc(updateUserDataRef,{
+                  email:`${newEmail}`
+                })
+                console.log("firestoreのemail登録データを更新しました")
+
+              }).catch((error) => {
+                const errorCode = error.code
+                const errorMessage = error.Message
+                console.log(errorCode,errorMessage);
+                alert("新しいメールアドレスへの更新に失敗しました")
+              })
+            } else {
+              const errorCode = error.code
+                const errorMessage = error.Message
+                console.log(errorCode,errorMessage);
+              alert("現在ログイン中のユーザー情報の変更に失敗しました")
+            }
+          })
+    
+          
+
+      }
+
+      
+
+      
+
+
+
+      
+
+      
+
+      
+
+
+    }
+
+    const handleUpdateUserPassword = async () => {
+
+      await sendPasswordResetEmail(auth,email).then(() => {
+        alert("パスワード再設定用のメールを登録されているメールアドレスに送信いたしました。")
+      }).catch((error) =>{
+        const errorCode = error.code;
+        const errorMessage = error.Message;
+        console.log(errorCode,errorMessage);
+        
+      })
+
+    }
+
 
   return (
     <div>
@@ -223,13 +364,25 @@ const SignedInUserEditButton = () => {
                                  
                         </div>
                         <div>
-                          <label htmlFor="password">ユーザーID<span className=' text-slate-50'>..........</span></label>
+                          <label htmlFor="uid">ユーザーID<span className=' text-slate-50'>..........</span></label>
                           <input type="text"
                                  id='uid'
                                  value={uid}
                                  onChange={handleChangeUid}
                                  required
                                  className='border-2 border-black w-[350px] h-[30px]' 
+                                 >
+                                   
+                                 </input>
+                        </div>
+                        <div>
+                          <label htmlFor="email">新しいメールアドレス<span className=' text-slate-50'></span></label>
+                          <input type="email"
+                                 id='newEmail'
+                                //  value={uid}
+                                 onChange={handleChangeUpdateEmail}
+                                 required
+                                 className='border-2 border-black w-[350px] h-[30px] my-5' 
                                  >
                                    
                                  </input>
@@ -252,10 +405,10 @@ const SignedInUserEditButton = () => {
                       </div>
                           <div className='flex ml-[100px]' >
 
-                          <button onClick={handleEditSubmit} className='my-10 mr-[350px] bg-amber-400 border-amber-500 text-slate-50 rounded-md w-[200px] h-[30px] hover:scale-105 active:scale-95'>
+                          <button onClick={handleUpdateUserEmail} className='my-10 mr-[350px] bg-amber-400 border-amber-500 text-slate-50 rounded-md w-[200px] h-[30px] hover:scale-105 active:scale-95'>
                             メールアドレスを変更する
                           </button>
-                          <button onClick={closeUserEditModal} className='my-10 bg-rose-400 border-rose-500 text-slate-50 rounded-md w-[200px] hover:scale-105 active:scale-95'>
+                          <button onClick={handleUpdateUserPassword} className='my-10 bg-rose-400 border-rose-500 text-slate-50 rounded-md w-[200px] hover:scale-105 active:scale-95'>
                             パスワードを変更する
                           </button>
                       </div>

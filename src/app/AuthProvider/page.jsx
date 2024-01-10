@@ -597,7 +597,7 @@ export const useAuth = () => {
     
    
 
-    <AuthContext.Provider value={{user,setUser,authUser,setAuthUser,docId,signedInUserName,signIn,signOut}}>
+    <AuthContext.Provider value={{user,setUser,authUser,setAuthUser,docId,signedInUserName,signIn,signOut,password}}>
         {children}
         {/* {useState("")} */}
     </AuthContext.Provider>
