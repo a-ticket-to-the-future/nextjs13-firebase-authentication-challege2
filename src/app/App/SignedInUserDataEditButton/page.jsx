@@ -2,16 +2,17 @@
 
 import { useAuth } from '@/app/AuthProvider/page';
 import { auth, db } from '@/firebase';
-import { reauthenticateWithCredential, sendEmailVerification, sendPasswordResetEmail, signInWithEmailAndPassword, updateEmail, verifyBeforeUpdateEmail, } from 'firebase/auth';
+import { deleteUser, reauthenticateWithCredential, sendEmailVerification, sendPasswordResetEmail, signInWithEmailAndPassword, signOut, updateEmail, verifyBeforeUpdateEmail, } from 'firebase/auth';
 import { update } from 'firebase/database';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { deleteDoc, doc, getDoc, updateDoc } from 'firebase/firestore';
+import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
 import Modal from 'react-modal';
 
 
 const SignedInUserEditButton = () => {
 
-    const {authUser , docId,password } = useAuth()
+    const {authUser , docId,password,signOut } = useAuth()
 
     const [userEditModalOpen ,setUserEditModalOpen] = useState(false);
     const [uid , setUid] = useState("")
@@ -19,6 +20,7 @@ const SignedInUserEditButton = () => {
     const [displayName , setDisplayName] = useState("")
     const [newEmail , setNewEmail] = useState("");
     const [reauthPassword,setReauthPassword] = useState("");
+    const router = useRouter();
 
     // setSignedInUserName(doc.data().displayName)
 
@@ -250,7 +252,7 @@ const SignedInUserEditButton = () => {
           // const user = auth.currentUser
           const updatedEmail = auth.currentUser.email
     
-           await signInWithEmailAndPassword(auth,updatedEmail,"grandemilan2011").then((credentialUser) => {
+           await signInWithEmailAndPassword(auth,updatedEmail,`${password}`).then((credentialUser) => {
             const user = credentialUser.user
     
             if(user && newEmail){
@@ -311,6 +313,35 @@ const SignedInUserEditButton = () => {
         console.log(errorCode,errorMessage);
         
       })
+
+    }
+
+    const handleDeleteUser = async () => {
+
+      const user = auth.currentUser
+
+      await sendEmailVerification(user).then(() => {
+        alert("ログインユーザーに確認メールを送信しました")
+        console.log(user.emailVerified)
+      }).catch((error) => {
+        alert("確認メールの送信に失敗しました")
+      })
+
+      if(user && user.emailVerified){
+
+        deleteUser(user).then(()=>{
+          alert("ユーザーアカウントを削除しました")
+          deleteDoc(doc((db,"users",`${docId}`)))
+          closeUserEditModal()
+          signOut(auth);
+          router.push("/")
+        }).catch((error) => {
+          alert("ユーザーアカウントの削除に失敗しました")
+        })
+
+      } else {
+        alert("ログインユーザーの確認に失敗しました")
+      }
 
     }
 
@@ -394,12 +425,15 @@ const SignedInUserEditButton = () => {
                     </form>
                   </div>
                   <div className=' flex flex-col mt-10'>
-                      <div className='flex ml-[100px]' >
+                      <div className='flex ml-[100px] ' >
 
-                          <button onClick={handleEditSubmit} className='my-10 mr-[350px] bg-fuchsia-400 border-fuchsia-500 text-slate-50 rounded-md w-[150px] h-[30px] hover:scale-105 active:scale-95'>
+                          <button onClick={handleEditSubmit} className='my-10 mx-5 bg-fuchsia-400 border-fuchsia-500 text-slate-50 rounded-md w-[150px] h-[30px] hover:scale-105 active:scale-95'>
                             編集を保存
                           </button>
-                          <button onClick={closeUserEditModal} className='my-10 bg-red-500 border-red-800 text-slate-50 rounded-md w-[150px] hover:scale-105 active:scale-95'>
+                          <button onClick={handleDeleteUser} className='my-10 mx-5 bg-gray-600 border-gray-700 text-slate-50 rounded-md w-[200px] h-[30px] hover:scale-105 active:scale-95'>
+                            アカウントを削除する
+                          </button>
+                          <button onClick={closeUserEditModal} className='my-10 mx-5 bg-red-500 border-red-800 text-slate-50 rounded-md w-[150px] hover:scale-105 active:scale-95'>
                             キャンセル
                           </button>
                       </div>
