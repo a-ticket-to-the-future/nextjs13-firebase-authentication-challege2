@@ -12,7 +12,7 @@ import Modal from 'react-modal';
 
 const SignedInUserEditButton = () => {
 
-    const {authUser , docId,password,signOut } = useAuth()
+    const {authUser , docId,password,signOut,setAuthUser } = useAuth()
 
     const [userEditModalOpen ,setUserEditModalOpen] = useState(false);
     const [uid , setUid] = useState("")
@@ -20,6 +20,7 @@ const SignedInUserEditButton = () => {
     const [displayName , setDisplayName] = useState("")
     const [newEmail , setNewEmail] = useState("");
     const [reauthPassword,setReauthPassword] = useState("");
+    const [inputPassword ,setInputPassword] = useState("")
     const router = useRouter();
 
     // setSignedInUserName(doc.data().displayName)
@@ -34,10 +35,10 @@ const SignedInUserEditButton = () => {
         setEmail(inputMail);
         // console.log(email);
       }
-      const handleChangeUid = (e) => {
-        // const inputPassword = e.target.value;
-        // setPassword(inputPassword);
-        // console.log(password);
+      const handleChangePassword = (e) => {
+        const inputtedPassword = e.target.value;
+        setInputPassword(inputtedPassword);
+        // console.log(inputtedPassword);
       }
       const handleChangeUpdateEmail= (e) => {
         const inputNewEmail = e.target.value;
@@ -93,6 +94,7 @@ const SignedInUserEditButton = () => {
         setUserEditModalOpen(false);
         setDisplayName(null);
         setEmail(null);
+        setInputPassword(null);
         // setPassword(null);
       }
 
@@ -261,7 +263,7 @@ const SignedInUserEditButton = () => {
           // const user = auth.currentUser
           const updatedEmail = auth.currentUser.email
     
-           await signInWithEmailAndPassword(auth,updatedEmail,`grandemilan2007`).then((credentialUser) => {
+           await signInWithEmailAndPassword(auth,updatedEmail,`${inputPassword}`).then((credentialUser) => {
             const user = credentialUser.user
     
             if(user && newEmail){
@@ -277,7 +279,8 @@ const SignedInUserEditButton = () => {
                  updateDoc(updateUserDataRef,{
                   email:`${newEmail}`
                 })
-                console.log("firestoreのemail登録データを更新しました")
+                alert("firestoreのemail登録データを更新しました")
+                closeUserEditModal();
 
               }).catch((error) => {
                 const errorCode = error.code
@@ -340,10 +343,11 @@ const SignedInUserEditButton = () => {
 
         deleteUser(user).then(()=>{
           alert("ユーザーアカウントを削除しました")
-          deleteDoc(doc((db,"users",`${docId}`)))
+          deleteDoc(doc(db,"users",`${docId}`))
           closeUserEditModal()
-          auth.signOut(auth);
-          router.push("/")
+          signOut();
+          // setAuthUser(undefined)
+          // router.push("/")
         }).catch((error) => {
           alert("ユーザーアカウントの削除に失敗しました")
         })
@@ -404,11 +408,11 @@ const SignedInUserEditButton = () => {
                                  
                         </div>
                         <div>
-                          <label htmlFor="uid">ユーザーID<span className=' text-slate-50'>..........</span></label>
-                          <input type="text"
-                                 id='uid'
-                                 value={uid}
-                                 onChange={handleChangeUid}
+                          <label htmlFor="password">パスワード<span className=' text-slate-50'>..........</span></label>
+                          <input type="password"
+                                 id='password'
+                                 value={password}
+                                 onChange={handleChangePassword}
                                  required
                                  className='border-2 border-black w-[350px] h-[30px]' 
                                  >
