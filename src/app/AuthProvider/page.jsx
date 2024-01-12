@@ -277,6 +277,8 @@ export const useAuth = () => {
 
         if(signInUser.uid){
 
+          
+
           const q = query(collection(db,"users"),where("uid","==",`${signInUser.uid}`))
           console.log(q);
 

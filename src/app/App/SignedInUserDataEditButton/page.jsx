@@ -50,6 +50,8 @@ const SignedInUserEditButton = () => {
       const SignedInUserEditModal = async () => {
 
         setUserEditModalOpen(true);
+        
+        
 
         await afterUserEditModal();
 
@@ -58,6 +60,9 @@ const SignedInUserEditButton = () => {
         
           try{
             
+
+            
+
             const editRef = doc(db,"users",`${docId}`)
                   const editDocSnap = await getDoc(editRef);
         
@@ -69,6 +74,7 @@ const SignedInUserEditButton = () => {
                     setDisplayName(editUserData.displayName);
                     setEmail(editUserData.email);
                     setUid(editUserData.uid);
+
                     setReauthPassword(password);
             // // await handleEditSubmit();
     
@@ -231,6 +237,9 @@ const SignedInUserEditButton = () => {
 
       const user = auth.currentUser
       
+      //firebaseauth.configs.getHashConfig
+      
+      
       await sendEmailVerification(auth.currentUser).then(()=> {
         alert("ログインユーザーに確認メールを送信しました")
         console.log(auth.currentUser)
@@ -252,7 +261,7 @@ const SignedInUserEditButton = () => {
           // const user = auth.currentUser
           const updatedEmail = auth.currentUser.email
     
-           await signInWithEmailAndPassword(auth,updatedEmail,`${password}`).then((credentialUser) => {
+           await signInWithEmailAndPassword(auth,updatedEmail,`grandemilan2007`).then((credentialUser) => {
             const user = credentialUser.user
     
             if(user && newEmail){
@@ -333,7 +342,7 @@ const SignedInUserEditButton = () => {
           alert("ユーザーアカウントを削除しました")
           deleteDoc(doc((db,"users",`${docId}`)))
           closeUserEditModal()
-          signOut(auth);
+          auth.signOut(auth);
           router.push("/")
         }).catch((error) => {
           alert("ユーザーアカウントの削除に失敗しました")
