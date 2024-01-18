@@ -5,6 +5,7 @@ import { useAuth } from '../AuthProvider/page'
 import { auth, db } from '../../firebase'
 import { doc } from 'firebase/firestore'
 import SignedInUserDataEditButton from "./SignedInUserDataEditButton/page"
+import ProductDisplay from "../StripeTest/stripeTest"
 
 
 
@@ -47,8 +48,13 @@ const App = () => {
                 ログイン中です
               </div>
               <div className='mt-[300px]'>
+                <div className=' mx-10'>
 
-              <SignedInUserDataEditButton />
+                <SignedInUserDataEditButton />
+                </div>
+                <div>
+                  <ProductDisplay />
+                </div>
               </div>
               {/* <div>
                  <SignOutButton  />
