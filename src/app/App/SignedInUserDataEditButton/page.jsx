@@ -4,10 +4,12 @@ import { useAuth } from '@/app/AuthProvider/page';
 import { auth, db } from '@/firebase';
 import { deleteUser, reauthenticateWithCredential, sendEmailVerification, sendPasswordResetEmail, signInWithEmailAndPassword, signOut, updateEmail, verifyBeforeUpdateEmail, } from 'firebase/auth';
 import { update } from 'firebase/database';
-import { deleteDoc, doc, getDoc, updateDoc } from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDoc, query, updateDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
 import Modal from 'react-modal';
+// import UsersDataLists from "./UsersDataLists/page"
+
 
 
 const SignedInUserEditButton = () => {
@@ -359,7 +361,11 @@ const SignedInUserEditButton = () => {
     }
 
 
+    
+
+
   return (
+    <div className='flex'>
     <div>
       <button 
             className=' w-[150px] h-[30px] border-2 border-fuchsia-600 bg-fuchsia-400 rounded-lg text-slate-50 hover:scale-105 active:scale-95'
@@ -462,6 +468,13 @@ const SignedInUserEditButton = () => {
                   </div>
                 </div>
       </Modal>
+    </div>
+    <div>
+      <div>
+        {/* <UsersDataLists /> */}
+      </div>
+    </div>
+
     </div>
   )
 }
