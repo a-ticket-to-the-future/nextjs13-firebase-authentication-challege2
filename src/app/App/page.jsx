@@ -5,7 +5,7 @@ import { useAuth } from '../AuthProvider/page'
 import { auth, db } from '../../firebase'
 import { doc } from 'firebase/firestore'
 import SignedInUserDataEditButton from "./SignedInUserDataEditButton/page"
-import ProductDisplay from "../StripeTest/stripeTest"
+import ProductDisplay from "../pages/ProductDisplay/page"
 
 
 
@@ -54,6 +54,7 @@ const App = () => {
                 </div>
                 <div>
                   <ProductDisplay />
+                  
                 </div>
               </div>
               {/* <div>
